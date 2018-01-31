@@ -1,0 +1,3 @@
+vendor/
+web/upload/*
+!web/upload/.gitkeep
