@@ -17,12 +17,12 @@ class UserController extends BaseController
     {
         try
         {
-        	$json = $this->parseJSON($request);
+            $json = $this->parseJSON($request);
 
-        	$login = $json["login"];
+            $login = $json["login"];
             $password = $json["password"];
 
-        	$hash = hash('sha256', $password . self::SALT, false);
+            $hash = hash('sha256', $password . self::SALT, false);
 
             $this->userService->createUser($login, $hash);
 

@@ -14,45 +14,44 @@ class BaseControllerException extends Exception { }
 
 class BaseController
 {
-	const SALT = 'diskapp';
+    const SALT = 'diskapp';
 
-	protected $userService;
+    protected $userService;
 
-	public function __construct(UserService $userService)
+    public function __construct(UserService $userService)
     {
         $this->userService = $userService;
     }
 
-	public function parseJSON(Request $request)
+    public function parseJSON(Request $request)
     {
-		if ($request->headers->get('Content-Type') == 'application/json')
-		{
-		    $data = json_decode($request->getContent(), true);
-		    return $data;
-		}
-		else
-		{
-			return array();
-		}
+        if ($request->headers->get('Content-Type') == 'application/json')
+        {
+            $data = json_decode($request->getContent(), true);
+            return $data;
+        }
+        else
+        {
+            return array();
+        }
     }
 
     protected function checkAuthenticationData($login, $password)
     {
-    	
-	 	$hash = hash('sha256', $password . self::SALT, false);
+         $hash = hash('sha256', $password . self::SALT, false);
 
-	    try
-    	{    
-	        $user = $this->userService->getUserByLogin($login);
+        try
+        {
+            $user = $this->userService->getUserByLogin($login);
         }
-	    catch (Exception $ex)
+        catch (Exception $ex)
         {
             throw new BaseControllerException($ex->getMessage());
         }
 
         if(!isset($user) OR $user->getHash() != $hash)
-	    {
-	        throw new Exception('user not found or password incorrect!', 1);
-	    }
+        {
+            throw new Exception('user not found or password incorrect!', 1);
+        }
     }
 }
