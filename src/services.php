@@ -8,7 +8,6 @@ use DiskApp\Controller\UserController;
 use DiskApp\Service\UserService;
 use DiskApp\Repository\UserRepository;
 
-// User
 $app['users.controller'] = function ($app) {
     return new UserController($app['users.service']);
 };
@@ -21,7 +20,6 @@ $app['users.repository'] = function ($app) {
     return new UserRepository($app['db']);
 };
 
-// File
 $app['files.controller'] = function ($app) {
     return new FileController($app['users.service'], $app['files.service']);
 };

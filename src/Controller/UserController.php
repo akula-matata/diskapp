@@ -19,12 +19,12 @@ class UserController extends BaseController
         {
             $json = $this->parseJSON($request);
 
-            $login = $json["login"];
+            $username = $json["username"];
             $password = $json["password"];
 
             $hash = hash('sha256', $password . self::SALT, false);
 
-            $this->userService->createUser($login, $hash);
+            $this->userService->createUser($username, $hash);
 
             return new JsonResponse(['message' => 'user was successfully created!'], Response::HTTP_CREATED);
         }

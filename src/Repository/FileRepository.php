@@ -16,7 +16,7 @@ class FileRepository extends BaseRepository
         try
         {
             $statement = $this->dbConnection->executeQuery(
-                'SELECT f.id, f.filename, f.user_id, u.id, u.login, u.hash
+                'SELECT f.id, f.filename, f.user_id, u.id, u.username, u.hash
                  FROM files f
                  INNER JOIN users u
                  ON f.user_id = u.id
@@ -32,7 +32,7 @@ class FileRepository extends BaseRepository
                 throw new FileRepositoryException('no one file row for you!');
             }
 
-            $user = new User($result["login"], $result["hash"]);
+            $user = new User($result["username"], $result["hash"]);
             $user->setId($result["user_id"]);
 
             $file = new File($result["filename"], $user);
@@ -40,7 +40,7 @@ class FileRepository extends BaseRepository
 
             return $file;
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new FileRepositoryException($ex->getMessage());
         }
@@ -63,7 +63,7 @@ class FileRepository extends BaseRepository
                 throw new FileRepositoryException('the file row can not be inserted into table!');
             }
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new FileRepositoryException($ex->getMessage());
         }
@@ -86,7 +86,7 @@ class FileRepository extends BaseRepository
                 throw new FileRepositoryException('the file row can not be deleted from table!');
             }
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new FileRepositoryException($ex->getMessage());
         }
@@ -102,7 +102,7 @@ class FileRepository extends BaseRepository
         try
         {
             $statement = $this->dbConnection->executeQuery(
-                'SELECT f.filename, u.login
+                'SELECT f.filename, u.username
                  FROM files f
                  INNER JOIN users u
                  ON f.user_id = u.id');
@@ -115,7 +115,7 @@ class FileRepository extends BaseRepository
 
             return $result;
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new FileRepositoryException($ex->getMessage());
         }

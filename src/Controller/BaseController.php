@@ -36,13 +36,13 @@ class BaseController
         }
     }
 
-    protected function checkAuthenticationData($login, $password)
+    protected function checkAuthenticationData($username, $password)
     {
          $hash = hash('sha256', $password . self::SALT, false);
 
         try
         {
-            $user = $this->userService->getUserByLogin($login);
+            $user = $this->userService->getUserByUsername($username);
         }
         catch (Exception $ex)
         {

@@ -3,7 +3,6 @@
 $routes = $app['controllers_factory'];
 
 $routes->post('/register', 'users.controller:register');
-$routes->post('/login', 'users.controller:login');
 
 $routes->get('/files', 'files.controller:getFilesList');
 $routes->get('/files/{filename}', 'files.controller:getFile');

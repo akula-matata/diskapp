@@ -5,12 +5,13 @@ namespace DiskApp\Model;
 class User
 {
     private $id;
-    private $login;
+    private $username;
     private $hash;
 
-    public function __construct($login, $hash)
+    public function __construct($id, $username, $hash)
     {
-        $this->login = $login;
+        $this->id = $id;
+        $this->username = $username;
         $this->hash = $hash;
     }
 
@@ -19,14 +20,9 @@ class User
         return $this->id;
     }
 
-    public function setId($id)
+    public function getUsername()
     {
-        $this->id = $id;
-    }
-
-    public function getLogin()
-    {
-        return $this->login;
+        return $this->username;
     }
 
     public function getHash()

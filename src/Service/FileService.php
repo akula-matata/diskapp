@@ -47,11 +47,11 @@ class FileService
         return $fullFilename;
     }
 
-    public function createFile($login, $filename, $fileContent)
+    public function createFile($username, $filename, $fileContent)
     {
         try
         {
-            $user = $this->users->getUserByLogin($login);
+            $user = $this->users->getUserByUsername($username);
             $file = new File($filename, $user);
 
             $this->files->add($file);
@@ -76,11 +76,11 @@ class FileService
         }
     }
 
-    public function deleteFile($login, $filename)
+    public function deleteFile($username, $filename)
     {
         try
         {
-            $user = $this->users->getUserByLogin($login);
+            $user = $this->users->getUserByUsername($username);
             $file = $this->files->getByFilename($filename);
 
             $this->checkUserHasRightsToFile($user, $file);
@@ -112,11 +112,11 @@ class FileService
         }
     }
 
-    public function updateFile($login, $filename, $fileContent)
+    public function updateFile($username, $filename, $fileContent)
     {
         try
         {
-            $user = $this->users->getUserByLogin($login);
+            $user = $this->users->getUserByUsername($username);
             $file = $this->files->getByFilename($filename);
 
             $this->checkUserHasRightsToFile($user, $file);

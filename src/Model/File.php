@@ -8,8 +8,9 @@ class File
     private $filename;
     private $user;
 
-    public function __construct($filename, User $user)
+    public function __construct($id, $filename, User $user)
     {
+        $this->id = $id;
         $this->filename = $filename;
         $this->user = $user;
     }
@@ -17,11 +18,6 @@ class File
     public function getId()
     {
         return $this->id;
-    }
-
-    public function setId($id)
-    {
-        $this->id = $id;
     }
 
     public function getFilename()

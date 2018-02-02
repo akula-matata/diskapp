@@ -15,38 +15,42 @@ class UserRepository extends BaseRepository
         try
         {
             $this->dbConnection->executeQuery(
-                'INSERT INTO users (login, hash) VALUES (?, ?)',
+                'INSERT INTO users (username, hash) VALUES (?, ?)',
                 [
-                    $user->getLogin(), 
+                    $user->getUsername(), 
                     $user->getHash()
                 ]
             );
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new UserRepositoryException($ex->getMessage());
         }
     }
 
-    public function getUserByLogin($login)
+    public function getUserByUsername($username)
     {
         try
         {
             $statement = $this->dbConnection->executeQuery(
-                'SELECT id, login, hash FROM users WHERE login = ?',
+                'SELECT id, username, hash FROM users WHERE username = ?',
                 [
-                    $login
+                    $username
                 ]
             );
 
-            $executeQuery = $statement->fetch();
+            $result = $statement->fetch();
 
-            $user = new User($executeQuery["login"], $executeQuery["hash"]);
-            $user->setId($executeQuery["id"]);
+            if ($result == false)
+            {
+                throw new UserRepositoryException('no user with such username!');
+            }
+
+            $user = new User($result["id"], $result["username"], $result["hash"]);
 
             return $user;
         }
-        catch(DBALException $ex)
+        catch(Exception $ex)
         {
             throw new UserRepositoryException($ex->getMessage());
         }

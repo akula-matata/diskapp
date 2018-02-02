@@ -28,9 +28,9 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
 
             $files = $this->fileService->getFilesList();
 
@@ -46,9 +46,9 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
 
             $fullFilename = $this->fileService->getFile($filename);
 
@@ -67,9 +67,9 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
 
             $fileContent = $request->files->get('file');
             if (!isset($fileContent))
@@ -78,7 +78,7 @@ class FileController extends BaseController
             }
             $filename = $fileContent->getClientOriginalName();
             
-            $this->fileService->createFile($login, $filename, $fileContent);
+            $this->fileService->createFile($username, $filename, $fileContent);
 
             return new JsonResponse(['message' => 'file was successfully put!'], Response::HTTP_CREATED);
         }
@@ -92,11 +92,11 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
 
-            $this->fileService->deleteFile($login, $filename);
+            $this->fileService->deleteFile($username, $filename);
 
             return new JsonResponse(['message' => 'file was successfully deleted!'], Response::HTTP_CREATED);
         }
@@ -110,9 +110,9 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
 
             $fileContent = $request->files->get('file');
 
@@ -122,7 +122,7 @@ class FileController extends BaseController
             }
             $filename = $fileContent->getClientOriginalName();
             
-            $this->fileService->updateFile($login, $filename, $fileContent);
+            $this->fileService->updateFile($username, $filename, $fileContent);
 
             return new JsonResponse(['message' => 'file was successfully updated!'], Response::HTTP_CREATED);
         }
@@ -136,9 +136,9 @@ class FileController extends BaseController
     {
         try
         {
-            $login = $request->getUser();
+            $username = $request->getUser();
             $password = $request->getPassword();
-            $this->checkAuthenticationData($login, $password);
+            $this->checkAuthenticationData($username, $password);
             
             $metadata = $this->fileService->getFileMetadata($filename);
 

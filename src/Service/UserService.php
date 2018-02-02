@@ -17,11 +17,11 @@ class UserService
         $this->users = $users;
     }
 
-    public function createUser($login, $hash)
+    public function createUser($username, $hash)
     {
         try
         {
-            $user = new User($login, $hash);
+            $user = new User(null, $username, $hash);
             $user = $this->users->add($user);
         }
         catch (Exception $ex)
@@ -30,11 +30,11 @@ class UserService
         }
     }
 
-    public function getUserByLogin($login)
+    public function getUserByUsername($username)
     {
         try
         {
-            $user = $this->users->getUserByLogin($login);
+            $user = $this->users->getUserByUsername($username);
         }
         catch (Exception $ex)
         {
