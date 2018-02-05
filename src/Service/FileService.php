@@ -29,30 +29,31 @@ class FileService
         {
             return $this->files->getFilesList();
         }
-        catch (FileException $ex)
+        catch (Exception $ex)
         {
-            throw new FileRepositoryException($ex);
+            throw new FileServiceException($ex->getMessage());
         }
     }
 
     public function getFile($filename)
     {
-        $fullFilename = __DIR__ . self::UPLOAD_DIRECTORY . $filename;
+        $path = __DIR__ . self::UPLOAD_DIRECTORY . $filename;
 
-        if (!file_exists($fullFilename))
+        if (!file_exists($path))
         {
-            throw new FileServiceException('file not found on disk!');
+            throw new FileServiceException('file with this filename does not exist!');
         }
 
-        return $fullFilename;
+        return $path;
     }
 
     public function createFile($username, $filename, $fileContent)
     {
         try
         {
-            $user = $this->users->getUserByUsername($username);
-            $file = new File($filename, $user);
+            $user = $this->users->getByUsername($username);
+
+            $file = new File(null, $filename, $user);
 
             $this->files->add($file);
             $this->saveFileContent($fileContent);
@@ -67,12 +68,17 @@ class FileService
     {
         try
         {
+            if (empty($fileContent))
+            {
+                throw new FileServiceException('no content found among uploaded files!');
+            }
+
             $filename = $fileContent->getClientOriginalName();
             $fileContent->move(__DIR__ . self::UPLOAD_DIRECTORY, $filename);
         }
-        catch (FileException $ex)
+        catch (Exception $ex)
         {
-            throw new FileRepositoryException($ex);
+            throw new FileServiceException($ex->getMessage());
         }
     }
 
@@ -80,7 +86,7 @@ class FileService
     {
         try
         {
-            $user = $this->users->getUserByUsername($username);
+            $user = $this->users->getByUsername($username);
             $file = $this->files->getByFilename($filename);
 
             $this->checkUserHasRightsToFile($user, $file);
@@ -88,7 +94,10 @@ class FileService
             $this->files->remove($user, $file);
 
             $fullFilename = __DIR__ . self::UPLOAD_DIRECTORY . $filename;
-            $this->removeExistingFileFromDisk($fullFilename);
+            if (file_exists($fullFilename)) 
+            {
+                unlink($fullFilename);
+            }
         }
         catch (Exception $ex)
         {
@@ -100,15 +109,7 @@ class FileService
     {
         if ($user->getId() != $file->getUser()->getId()) 
         {
-            throw new FileServiceException('wtf? file is not yours!');
-        }
-    }
-
-    public function removeExistingFileFromDisk($fullFilename)
-    {
-        if (file_exists($fullFilename)) 
-        {
-            unlink($fullFilename);
+            throw new FileServiceException('the user can not get access to file with that filename!');
         }
     }
 
@@ -116,12 +117,11 @@ class FileService
     {
         try
         {
-            $user = $this->users->getUserByUsername($username);
+            $user = $this->users->getByUsername($username);
             $file = $this->files->getByFilename($filename);
 
             $this->checkUserHasRightsToFile($user, $file);
 
-            $this->files->save($file);
             $this->saveFileContent($fileContent);
         }
         catch (Exception $ex)
@@ -138,7 +138,7 @@ class FileService
 
             if (!file_exists($path)) 
             {
-                throw new FileServiceException('no such file on disk! go straight ahead the forest');
+                throw new FileServiceException('file with this filename does not exist!');
             }
 
             $metadata = [

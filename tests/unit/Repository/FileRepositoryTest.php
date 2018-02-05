@@ -12,8 +12,6 @@ use DiskApp\Model\File;
 class FileRepositoryTest extends TestCase
 {
     private $files;
-    private $lastId;
-
     private $dbConnection;
 
     protected function setUp()
@@ -22,7 +20,6 @@ class FileRepositoryTest extends TestCase
         require __DIR__ . '/../../../src/app.php';
 
         $this->dbConnection = $app['db'];
-
         $this->files = new FileRepository($this->dbConnection);
     }
 
@@ -30,13 +27,13 @@ class FileRepositoryTest extends TestCase
     {
         $this->deleteTestFiles();
         $this->deleteTestUsers();
-
+        $this->dbConnection->close();
         $this->files = null;
     }
 
     public function insertTestUser($username, $hash)
     {
-    	$this->dbConnection->executeQuery(
+        $this->dbConnection->executeQuery(
             'INSERT INTO users (username, hash) VALUES (?, ?)', 
             [
                 $username, $hash
@@ -48,17 +45,14 @@ class FileRepositoryTest extends TestCase
 
     public function insertTestFile($filename, $user_id)
     {
-    	$this->dbConnection->executeQuery(
+        $this->dbConnection->executeQuery(
             'INSERT INTO files (filename, user_id) VALUES (?, ?)', 
             [
                 $filename, $user_id
             ]
         );
-    }
 
-    public function deleteTestFiles()
-    {
-        $this->dbConnection->executeQuery('DELETE FROM files');
+        return $this->dbConnection->lastInsertId();
     }
 
     public function deleteTestUsers()
@@ -66,13 +60,16 @@ class FileRepositoryTest extends TestCase
         $this->dbConnection->executeQuery('DELETE FROM users');
     }
 
+    public function deleteTestFiles()
+    {
+        $this->dbConnection->executeQuery('DELETE FROM files');
+    }
+
     public function testAdd()
     {
-        $this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-
-        $user = new User($this->lastId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $file = new File(null, 'file.txt', $user);
-
         $actual = $this->files->add($file);
 
         $this->assertEquals($actual, null);
@@ -80,32 +77,149 @@ class FileRepositoryTest extends TestCase
 
     public function testAddDuplicateFile()
     {
-        if (FileRepositoryException::class)
+        try
         {
-            $this->expectException(FileRepositoryException::class);
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $fileId = $this->insertTestFile('file.txt', $userId);
+
+            $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $file = new File(null, 'file.txt', $user);
+
+            $actual = $this->files->add($file); 
         }
-
-    	$this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $this->insertTestFile('file.txt', $this->lastId);
-
-        $user = new User($this->lastId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $file = new File(null, 'file.txt', $user);
-
-        $actual = $this->files->add($file); 
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'can not add this file from the specified user!');
+        }
     }
 
     public function testAddNoUser()
     {
-    	if (FileRepositoryException::class)
+        try
         {
-            $this->expectException(FileRepositoryException::class);
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $user = new User(999, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
+            $file = new File(null, 'file.txt', $user);
+
+            $actual = $this->files->add($file);
         }
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'can not add this file from the specified user!');
+        }
+    }
 
-    	$this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+    public function testGetByFilename()
+    {
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $fileId = $this->insertTestFile('file.txt', $userId);
+        $actual = $this->files->getByFilename('file.txt');
+        
+        $expected = new File($fileId, 'file.txt', 
+            new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false))
+        );
 
-        $user = new User(999, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
-        $file = new File(null, 'file.txt', $user);
+        $this->assertEquals($actual, $expected);
+    }
 
-        $actual = $this->files->add($file);
+    public function testGetByFilenameNoFile()
+    {
+        try
+        {
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $fileId = $this->insertTestFile('file.txt', $userId);
+            $actual = $this->files->getByFilename('another_file.txt');
+        }
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'the user can not get access to file with that filename!');
+        }
+    }
+
+    public function testRemove()
+    {
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $fileId = $this->insertTestFile('file.txt', $userId);
+
+        $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $file = new File($fileId, 'file.txt', $user);
+
+        $actual = $this->files->remove($user, $file);
+
+        $this->assertEquals($actual, null);
+    }
+
+    public function testRemoveNoFile()
+    {
+        try
+        {
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $fileId = $this->insertTestFile('file.txt', $userId);
+
+            $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $file = new File($fileId, 'another_file.txt', $user);
+
+            $actual = $this->files->remove($user, $file);
+        }
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'there is no such file that can be deleted by this user!');
+        }
+    }
+
+    public function testRemoveByAnotherUser()
+    {
+        try
+        {
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $fileId = $this->insertTestFile('file.txt', $userId);
+
+            $anotherUserId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
+
+            $user = new User($anotherUserId, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
+            $file = new File($fileId, 'file.txt', $user);
+
+            $actual = $this->files->remove($user, $file);
+        }
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'there is no such file that can be deleted by this user!');
+        }
+    }
+
+    public function testGetFilesList()
+    {
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $this->insertTestFile('file.txt', $userId);
+
+        $userId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
+        $this->insertTestFile('another_file.txt', $userId);
+
+        $actual = $this->files->getFilesList();
+
+        $expected = [
+            [
+                'filename' => 'file.txt', 
+                'username' => 'petya'
+            ],
+            [
+                'filename' => 'another_file.txt', 
+                'username' => 'sasha'
+            ]
+        ];
+        
+        $this->assertEquals($actual, $expected);
+    }
+
+    public function testGetFilesListEmpty()
+    {
+        try
+        {
+            $actual = $this->files->getFilesList();
+        }
+        catch (FileRepositoryException $ex)
+        {
+            $this->assertEquals($ex->getMessage(), 'file repository is empty!');
+        }
     }
 }

@@ -16,7 +16,7 @@ class FileRepository extends BaseRepository
         try
         {
             $statement = $this->dbConnection->executeQuery(
-                'SELECT f.id, f.filename, f.user_id, u.id, u.username, u.hash
+                'SELECT f.id, f.filename, f.user_id, u.username, u.hash
                  FROM files f
                  INNER JOIN users u
                  ON f.user_id = u.id
@@ -29,14 +29,11 @@ class FileRepository extends BaseRepository
 
             if ($result == false)
             {
-                throw new FileRepositoryException('no one file row for you!');
+                throw new FileRepositoryException('the user can not get access to file with that filename!');
             }
 
-            $user = new User($result["username"], $result["hash"]);
-            $user->setId($result["user_id"]);
-
-            $file = new File($result["filename"], $user);
-            $file->setId($result["id"]);
+            $user = new User($result["user_id"], $result["username"], $result["hash"]);
+            $file = new File($result["id"], $result["filename"], $user);
 
             return $file;
         }
@@ -50,18 +47,34 @@ class FileRepository extends BaseRepository
     {
         try
         {
-            $insertedRows = $this->dbConnection->executeQuery(
+            $statement = $this->dbConnection->executeQuery(
+                'SELECT username FROM users WHERE username = ?',
+                [
+                    $file->getUser()->getUsername()
+                ]
+            );
+            $specifiedUser = $statement->fetch();
+
+            $statement = $this->dbConnection->executeQuery(
+                'SELECT filename FROM files WHERE filename = ?',
+                [
+                    $file->getFilename()
+                ]
+            );
+            $fileWithThisFilename = $statement->fetch();
+
+            if ($specifiedUser == false || $fileWithThisFilename != false)
+            {
+                throw new FileRepositoryException('can not add this file from the specified user!');
+            }
+
+            $this->dbConnection->executeQuery(
                 'INSERT INTO files (filename, user_id) VALUES (?, ?)', 
                 [
                     $file->getFilename(), 
                     $file->getUser()->getId()
                 ]
             );
-
-            if($insertedRows == 0)
-            {
-                throw new FileRepositoryException('the file row can not be inserted into table!');
-            }
         }
         catch(Exception $ex)
         {
@@ -83,18 +96,13 @@ class FileRepository extends BaseRepository
 
             if($deletedRows == 0)
             {
-                throw new FileRepositoryException('the file row can not be deleted from table!');
+                throw new FileRepositoryException('there is no such file that can be deleted by this user!');
             }
         }
         catch(Exception $ex)
         {
             throw new FileRepositoryException($ex->getMessage());
         }
-    }
-
-    public function save(File $file)
-    {
-        
     }
 
     public function getFilesList()
@@ -110,7 +118,7 @@ class FileRepository extends BaseRepository
 
             if ($result == false)
             {
-                throw new FileRepositoryException('no one file row for you!');
+                throw new FileRepositoryException('file repository is empty!');
             }
 
             return $result;

@@ -30,11 +30,11 @@ class UserService
         }
     }
 
-    public function getUserByUsername($username)
+    public function getByUsername($username)
     {
         try
         {
-            $user = $this->users->getUserByUsername($username);
+            $user = $this->users->getByUsername($username);
         }
         catch (Exception $ex)
         {

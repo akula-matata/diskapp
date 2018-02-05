@@ -14,6 +14,19 @@ class UserRepository extends BaseRepository
     {
         try
         {
+            $statement = $this->dbConnection->executeQuery(
+                'SELECT username FROM users WHERE username = ?',
+                [
+                    $user->getUsername()
+                ]
+            );
+            $result = $statement->fetch();
+
+            if ($result != false)
+            {
+                throw new UserRepositoryException('user with that username already exists!');
+            }
+
             $this->dbConnection->executeQuery(
                 'INSERT INTO users (username, hash) VALUES (?, ?)',
                 [
@@ -28,7 +41,7 @@ class UserRepository extends BaseRepository
         }
     }
 
-    public function getUserByUsername($username)
+    public function getByUsername($username)
     {
         try
         {
@@ -38,12 +51,11 @@ class UserRepository extends BaseRepository
                     $username
                 ]
             );
-
             $result = $statement->fetch();
 
             if ($result == false)
             {
-                throw new UserRepositoryException('no user with such username!');
+                throw new UserRepositoryException('user with this username does not exist!');
             }
 
             $user = new User($result["id"], $result["username"], $result["hash"]);

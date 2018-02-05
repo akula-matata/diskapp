@@ -1,6 +1,6 @@
 <?php
 
-namespace DiskApp\Repository;
+namespace DiskApp\Service;
 
 use Silex\Application;
 use PHPUnit\Framework\TestCase;
@@ -8,10 +8,10 @@ use PHPUnit\Framework\TestCase;
 use DiskApp\Controller\BaseController;
 use DiskApp\Model\User;
 
-class UserRepositoryTest extends TestCase
+class UserServiceTest extends TestCase
 {
-    private $users;
     private $dbConnection;
+    private $userService;
  
     protected function setUp()
     {
@@ -19,14 +19,14 @@ class UserRepositoryTest extends TestCase
         require __DIR__ . '/../../../src/app.php';
 
         $this->dbConnection = $app['db'];
-        $this->users = new UserRepository($this->dbConnection);
+        $this->userService = new UserService($app['users.repository']);
     }
  
     protected function tearDown()
     {
         $this->deleteTestUsers();
         $this->dbConnection->close();
-        $this->users = null;
+        $this->userService = null;
     }
 
     public function insertTestUser($username, $hash)
@@ -41,30 +41,42 @@ class UserRepositoryTest extends TestCase
         return $this->dbConnection->lastInsertId();
     }
 
+    public function insertTestFile($filename, $user_id)
+    {
+        $this->dbConnection->executeQuery(
+            'INSERT INTO files (filename, user_id) VALUES (?, ?)', 
+            [
+                $filename, $user_id
+            ]
+        );
+
+        return $this->dbConnection->lastInsertId();
+    }
+
     public function deleteTestUsers()
     {
         $this->dbConnection->executeQuery('DELETE FROM users');
     }
- 
-    public function testAdd()
-    {
-        $user = new User(null, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $actual = $this->users->add($user);
 
+    public function deleteTestFiles()
+    {
+        $this->dbConnection->executeQuery('DELETE FROM files');
+    }
+
+    public function testCreateUser()
+    {
+        $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->assertEquals($actual, null);
     }
 
-    public function testAddDuplicateUser()
+    public function testCreateUserDuplicateUser()
     {
         try
         {
             $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-            $user = new User(null, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
-            $actual = $this->users->add($user);
-
-            $this->assertEquals($actual, null);
+            $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         }
-        catch (UserRepositoryException $ex)
+        catch (UserServiceException $ex)
         {
             $this->assertEquals($ex->getMessage(), 'user with that username already exists!');
         }
@@ -73,7 +85,7 @@ class UserRepositoryTest extends TestCase
     public function testGetByUsername()
     {
         $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $actual = $this->users->getByUsername('petya');
+        $actual = $this->userService->getByUsername('petya');
 
         $this->assertEquals($actual->getUsername(), 'petya');
     }
@@ -83,9 +95,9 @@ class UserRepositoryTest extends TestCase
         try
         {
             $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-            $actual = $this->users->getByUsername('sasha');
+            $actual = $this->userService->getByUsername('sasha');
         }
-        catch (UserRepositoryException $ex)
+        catch (UserServiceException $ex)
         {
             $this->assertEquals($ex->getMessage(), 'user with this username does not exist!');
         }

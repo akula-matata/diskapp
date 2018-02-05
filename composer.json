@@ -2,9 +2,12 @@
     "require": {
         "silex/silex": "2.0",
         "doctrine/dbal": "2.5",
-        "phpunit/phpunit": "5.4"
+        "phpunit/phpunit": "5.7"
     },
     "autoload": {
-        "psr-4": {"DiskApp\\": "src/"}
+        "psr-4": {
+            "DiskApp\\": "src/",
+            "DiskApp\\Tests\\": "tests/unit"
+        }
     }
 }

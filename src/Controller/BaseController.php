@@ -42,7 +42,7 @@ class BaseController
 
         try
         {
-            $user = $this->userService->getUserByUsername($username);
+            $user = $this->userService->getByUsername($username);
         }
         catch (Exception $ex)
         {
