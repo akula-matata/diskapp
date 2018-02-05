@@ -24,50 +24,88 @@ class FileRepositoryTest extends TestCase
         $this->dbConnection = $app['db'];
 
         $this->files = new FileRepository($this->dbConnection);
-
-        $this->dbConnection->executeQuery(
-            'INSERT INTO users (username, hash) VALUES (?, ?)', 
-            [
-                'petya',
-                hash('sha256', 'petya' . BaseController::SALT, false)
-            ]
-        );
-
-        $this->lastId = $this->dbConnection->lastInsertId();
-
     }
 
     protected function tearDown()
     {
-        $this->dbConnection->executeQuery(
-            'DELETE FROM users WHERE username in (?)',
-            [
-                'petya'
-            ]
-        );
+        $this->deleteTestFiles();
+        $this->deleteTestUsers();
 
         $this->files = null;
     }
 
-    /**
-     * @dataProvider addDataProvider
-     */
-    public function testAdd($file, $expected, $exception)
+    public function insertTestUser($username, $hash)
     {
-        if ($exception)
-        {
-            $this->expectException($exception);
-        }
+    	$this->dbConnection->executeQuery(
+            'INSERT INTO users (username, hash) VALUES (?, ?)', 
+            [
+                $username, $hash
+            ]
+        );
+
+        return $this->dbConnection->lastInsertId();
+    }
+
+    public function insertTestFile($filename, $user_id)
+    {
+    	$this->dbConnection->executeQuery(
+            'INSERT INTO files (filename, user_id) VALUES (?, ?)', 
+            [
+                $filename, $user_id
+            ]
+        );
+    }
+
+    public function deleteTestFiles()
+    {
+        $this->dbConnection->executeQuery('DELETE FROM files');
+    }
+
+    public function deleteTestUsers()
+    {
+        $this->dbConnection->executeQuery('DELETE FROM users');
+    }
+
+    public function testAdd()
+    {
+        $this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+
+        $user = new User($this->lastId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $file = new File(null, 'file.txt', $user);
 
         $actual = $this->files->add($file);
 
-        $this->assertEquals($actual, $expected);
+        $this->assertEquals($actual, null);
     }
 
-    public function addDataProvider()
+    public function testAddDuplicateFile()
     {
-    	return [
-            [new File(null, 'file.txt', new User(null, 'petya', hash('sha256', 'petya' . BaseController::SALT, false))), null, null]
-        ];
+        if (FileRepositoryException::class)
+        {
+            $this->expectException(FileRepositoryException::class);
+        }
+
+    	$this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $this->insertTestFile('file.txt', $this->lastId);
+
+        $user = new User($this->lastId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $file = new File(null, 'file.txt', $user);
+
+        $actual = $this->files->add($file); 
+    }
+
+    public function testAddNoUser()
+    {
+    	if (FileRepositoryException::class)
+        {
+            $this->expectException(FileRepositoryException::class);
+        }
+
+    	$this->lastId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+
+        $user = new User(999, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
+        $file = new File(null, 'file.txt', $user);
+
+        $actual = $this->files->add($file);
     }
 }
