@@ -14,6 +14,11 @@ class UserRepository extends BaseRepository
     {
         try
         {
+            if (empty($user->getUsername()))
+            {
+                throw new UserRepositoryException('user can not be added because his username is not specified!');
+            }
+
             $statement = $this->dbConnection->executeQuery(
                 'SELECT username FROM users WHERE username = ?',
                 [

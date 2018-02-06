@@ -14,7 +14,6 @@ use DiskApp\Model\File;
 class FileServiceTest extends TestCase
 {
     const UPLOAD_DIRECTORY = "\\..\\..\\..\\web\\upload\\";
-
     const UPLOAD_TEST_DIRECTORY = "\\upload_test\\";
 
     private $dbConnection;
@@ -92,7 +91,7 @@ class FileServiceTest extends TestCase
 
         $actual = $this->fileService->createFile('petya', 'file.txt', $fileContent);
 
-        $this->assertEquals($actual, null);
+        $this->assertEquals(null, $actual);
     }
 
     public function testCreateFileDuplicateFile()
@@ -106,7 +105,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'can not add this file from the specified user!');
+            $this->assertEquals('can not add this file from the specified user!', $ex->getMessage());
         }
     }
 
@@ -119,7 +118,7 @@ class FileServiceTest extends TestCase
 
         $actual = $this->fileService->saveFileContent($fileContent);
 
-        $this->assertEquals($actual, null);
+        $this->assertEquals(null, $actual);
     }
 
     public function testSaveFileContentNoContent()
@@ -130,14 +129,14 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'no content found among uploaded files!');
+            $this->assertEquals('no content found among uploaded files!', $ex->getMessage());
         }
     }
 
     public function testGetFile()
     {
         $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $this->insertTestFile('file.txt', $userId);
+        $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
         $tempFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'temp_file.txt';
@@ -146,13 +145,16 @@ class FileServiceTest extends TestCase
 
         $actual = $this->fileService->getFile('uploaded_file.txt');
 
-        $this->assertEquals(realpath($actual), realpath(__DIR__ . self::UPLOAD_DIRECTORY . 'uploaded_file.txt'));
+        $this->assertEquals(realpath(__DIR__ . self::UPLOAD_DIRECTORY . 'uploaded_file.txt'), realpath($actual));
     }
 
     public function testGetFileNoFile()
     {
         try
         {
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $this->insertTestFile('uploaded_file.txt', $userId);
+
             $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
             $tempFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'temp_file.txt';
             copy($originalFile, $tempFile);
@@ -162,7 +164,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'file with this filename does not exist!');
+            $this->assertEquals('the user can not get access to file with that filename!', $ex->getMessage());
         }
     }
 
@@ -187,7 +189,7 @@ class FileServiceTest extends TestCase
             ]
         ];
 
-        $this->assertEquals($actual, $expected);
+        $this->assertEquals($expected, $actual);
     }
 
     public function testGetFilesListEmpty()
@@ -198,7 +200,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'file repository is empty!');
+            $this->assertEquals('file repository is empty!', $ex->getMessage());
         }
     }
 
@@ -209,7 +211,7 @@ class FileServiceTest extends TestCase
 
         $actual = $this->fileService->deleteFile('petya', 'file.txt');
 
-        $this->assertEquals($actual, null);
+        $this->assertEquals(null, $actual);
     }
 
     public function testDeleteFileNoFile()
@@ -226,7 +228,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'the user can not get access to file with that filename!');
+            $this->assertEquals('the user can not get access to file with that filename!', $ex->getMessage());
         }
     }
 
@@ -242,12 +244,12 @@ class FileServiceTest extends TestCase
 
         $originalFileForUpdate = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file_for_update.txt';
         $tempFileForUpdate = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'temp_file_for_update.txt';
-        copy($originalFile, $tempFileForUpdate);
+        copy($originalFileForUpdate, $tempFileForUpdate);
         $fileContentForUpdate = new UploadedFile($tempFileForUpdate, 'uploaded_file.txt', null, null, null, true);
         
         $actual = $this->fileService->updateFile('petya', 'file.txt', $fileContentForUpdate);
 
-        $this->assertEquals($actual, null);
+        $this->assertEquals(null, $actual);
     }
 
     public function testUpdateFileNoFile()
@@ -266,7 +268,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'the user can not get access to file with that filename!');
+            $this->assertEquals('the user can not get access to file with that filename!', $ex->getMessage());
         }
     }
 
@@ -284,14 +286,14 @@ class FileServiceTest extends TestCase
 
         $path = realpath(__DIR__ . self::UPLOAD_DIRECTORY . 'uploaded_file.txt');
         $expected = [
-                'filename' => 'uploaded_file.txt',
-                'type' => filetype($path),
-                'mime_type' => mime_content_type($path),
-                'size' => filesize($path),
-                'modified' => date ("F d Y H:i:s.", filemtime($path))
-            ];
+            'filename' => 'uploaded_file.txt',
+            'type' => filetype($path),
+            'mime_type' => mime_content_type($path),
+            'size' => filesize($path),
+            'modified' => date ("F d Y H:i:s.", filemtime($path))
+        ];
 
-        $this->assertEquals($actual, $expected);
+        $this->assertEquals($expected, $actual);
     }
 
     public function testGetFileMetadataNoFile()
@@ -305,7 +307,7 @@ class FileServiceTest extends TestCase
         }
         catch (FileServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'file with this filename does not exist!');
+            $this->assertEquals('file with this filename does not exist!', $ex->getMessage());
         }
     }
 }

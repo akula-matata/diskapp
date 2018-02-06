@@ -37,14 +37,23 @@ class FileService
 
     public function getFile($filename)
     {
-        $path = __DIR__ . self::UPLOAD_DIRECTORY . $filename;
-
-        if (!file_exists($path))
+        try
         {
-            throw new FileServiceException('file with this filename does not exist!');
-        }
+            $file = $this->files->getByFilename($filename);
 
-        return $path;
+            $path = __DIR__ . self::UPLOAD_DIRECTORY . $filename;
+
+            if (!file_exists($path))
+            {
+                throw new FileServiceException('file with this filename does not exist!');
+            }
+
+            return $path;
+        }
+        catch (Exception $ex)
+        {
+            throw new FileServiceException($ex->getMessage());
+        }
     }
 
     public function createFile($username, $filename, $fileContent)

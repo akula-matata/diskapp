@@ -5,7 +5,7 @@ namespace DiskApp\Service;
 use Silex\Application;
 use PHPUnit\Framework\TestCase;
 
-use DiskApp\Controller\BaseController;
+use DiskApp\Controller\UserController;
 use DiskApp\Model\User;
 
 class UserServiceTest extends TestCase
@@ -65,41 +65,41 @@ class UserServiceTest extends TestCase
 
     public function testCreateUser()
     {
-        $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-        $this->assertEquals($actual, null);
+        $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+        $this->assertEquals(null, $actual);
     }
 
     public function testCreateUserDuplicateUser()
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
-            $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+            $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
         }
         catch (UserServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'user with that username already exists!');
+            $this->assertEquals('user with that username already exists!', $ex->getMessage());
         }
     }
 
     public function testGetByUsername()
     {
-        $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
         $actual = $this->userService->getByUsername('petya');
 
-        $this->assertEquals($actual->getUsername(), 'petya');
+        $this->assertEquals('petya', $actual->getUsername());
     }
 
     public function testGetByUsernameNoUser()
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
             $actual = $this->userService->getByUsername('sasha');
         }
         catch (UserServiceException $ex)
         {
-            $this->assertEquals($ex->getMessage(), 'user with this username does not exist!');
+            $this->assertEquals('user with this username does not exist!', $ex->getMessage());
         }
     }
 }

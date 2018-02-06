@@ -15,13 +15,23 @@ use DiskApp\Service\FileService;
 
 class FileController extends BaseController
 {
-    protected $userService;
     private $fileService;
 
     public function __construct(UserService $userService, FileService $fileService)
     {
         parent::__construct($userService);
         $this->fileService = $fileService;
+    }
+
+    protected function checkAuthenticationData($username, $password)
+    {
+        $hash = hash('sha256', $password . self::SALT, false);
+        $user = $this->userService->getByUsername($username);
+
+        if(!isset($user) OR $user->getHash() != $hash)
+        {
+            throw new FileControllerException('user not found or password incorrect!');
+        }
     }
 
     public function getFilesList(Request $request)
@@ -38,7 +48,7 @@ class FileController extends BaseController
         }
         catch (Exception $ex)
         {
-            return new JsonResponse(['message' => $ex->getMessage()], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => $ex->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -59,7 +69,7 @@ class FileController extends BaseController
         }
         catch (Exception $ex)
         {
-            return new JsonResponse(['message' => $ex->getMessage()], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['message' => $ex->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -80,7 +90,14 @@ class FileController extends BaseController
             
             $this->fileService->createFile($username, $filename, $fileContent);
 
-            return new JsonResponse(['message' => 'file was successfully put!'], Response::HTTP_CREATED);
+            return new JsonResponse(
+                [
+                    'message' => 'file was successfully created!',
+                    'username' => $username,
+                    'filename' => $filename
+                ], 
+                Response::HTTP_CREATED
+            );
         }
         catch (Exception $ex)
         {
@@ -98,7 +115,12 @@ class FileController extends BaseController
 
             $this->fileService->deleteFile($username, $filename);
 
-            return new JsonResponse(['message' => 'file was successfully deleted!'], Response::HTTP_CREATED);
+            return new JsonResponse(
+                [
+                    'message' => 'file was successfully deleted!'
+                ], 
+                Response::HTTP_OK
+            );
         }
         catch (Exception $ex)
         {
@@ -124,7 +146,12 @@ class FileController extends BaseController
             
             $this->fileService->updateFile($username, $filename, $fileContent);
 
-            return new JsonResponse(['message' => 'file was successfully updated!'], Response::HTTP_CREATED);
+            return new JsonResponse(
+                [
+                    'message' => 'file was successfully updated!'
+                ], 
+                Response::HTTP_OK
+            );
         }
         catch (Exception $ex)
         {
@@ -142,7 +169,7 @@ class FileController extends BaseController
             
             $metadata = $this->fileService->getFileMetadata($filename);
 
-            return new JsonResponse($metadata, Response::HTTP_CREATED);
+            return new JsonResponse($metadata, Response::HTTP_OK);
         }
         catch (Exception $ex)
         {

@@ -12,12 +12,11 @@ use DiskApp\Service\UserService;
 
 class UserController extends BaseController
 {
-
     public function register(Request $request)
     {
         try
         {
-            $json = $this->parseJSON($request);
+        	$json = json_decode($request->getContent(), true);
 
             $username = $json["username"];
             $password = $json["password"];
@@ -26,11 +25,22 @@ class UserController extends BaseController
 
             $this->userService->createUser($username, $hash);
 
-            return new JsonResponse(['message' => 'user was successfully created!'], Response::HTTP_CREATED);
+            return new JsonResponse(
+                [
+                    'message' => 'user was successfully created!',
+                    'username' => $username
+                ], 
+                Response::HTTP_CREATED
+            );
         }
         catch(Exception $ex)
         {
-            return new JsonResponse(['message' => $ex->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return new JsonResponse(
+                [
+                    'message' => $ex->getMessage()
+                ], 
+                Response::HTTP_UNPROCESSABLE_ENTITY
+            );
         }
     }
 }

@@ -4,7 +4,7 @@ namespace DiskApp\Repository;
 
 use Doctrine\DBAL\Connection;
 
-abstract class BaseRepository
+class BaseRepository
 {
     protected $dbConnection;
 
