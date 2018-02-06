@@ -81,7 +81,7 @@ class FileControllerTest extends TestCase
 
     public function testPutFile()
     {
-        $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
         $tempFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'temp_file.txt';
@@ -115,7 +115,7 @@ class FileControllerTest extends TestCase
 
     public function testPutFileDuplicateFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -148,7 +148,7 @@ class FileControllerTest extends TestCase
 
     public function testDeleteFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -179,7 +179,7 @@ class FileControllerTest extends TestCase
 
     public function testDeleteFileNoFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -210,7 +210,7 @@ class FileControllerTest extends TestCase
 
     public function testUpdateFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -245,7 +245,7 @@ class FileControllerTest extends TestCase
 
     public function testUpdateFileNoFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -280,7 +280,7 @@ class FileControllerTest extends TestCase
 
     public function testGetFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -307,7 +307,7 @@ class FileControllerTest extends TestCase
 
     public function testGetFileNoFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -338,11 +338,11 @@ class FileControllerTest extends TestCase
 
     public function testGetFilesList()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('petya_file.txt', $userId);
         $this->insertTestFile('another_petya_file.txt', $userId);
 
-        $userId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+        $userId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
         $this->insertTestFile('sasha_file.txt', $userId);
         $this->insertTestFile('another_sasha_file.txt', $userId);
 
@@ -385,8 +385,8 @@ class FileControllerTest extends TestCase
 
     public function testGetFilesListEmpty()
     {
-        $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
-        $this->insertTestUser('sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+        $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
 
         $request = new Request(
             [], 
@@ -412,7 +412,7 @@ class FileControllerTest extends TestCase
 
     public function testGetFileMetadata()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';
@@ -447,7 +447,7 @@ class FileControllerTest extends TestCase
 
     public function testGetFileMetadataNoFile()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('uploaded_file.txt', $userId);
 
         $originalFile = __DIR__ . self::UPLOAD_TEST_DIRECTORY . 'original_file.txt';

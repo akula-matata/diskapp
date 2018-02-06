@@ -5,7 +5,7 @@ namespace DiskApp\Service;
 use Silex\Application;
 use PHPUnit\Framework\TestCase;
 
-use DiskApp\Controller\UserController;
+use DiskApp\Controller\BaseController;
 use DiskApp\Model\User;
 
 class UserServiceTest extends TestCase
@@ -65,7 +65,7 @@ class UserServiceTest extends TestCase
 
     public function testCreateUser()
     {
-        $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+        $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->assertEquals(null, $actual);
     }
 
@@ -73,8 +73,8 @@ class UserServiceTest extends TestCase
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
-            $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $actual = $this->userService->createUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         }
         catch (UserServiceException $ex)
         {
@@ -84,7 +84,7 @@ class UserServiceTest extends TestCase
 
     public function testGetByUsername()
     {
-        $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+        $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $actual = $this->userService->getByUsername('petya');
 
         $this->assertEquals('petya', $actual->getUsername());
@@ -94,7 +94,7 @@ class UserServiceTest extends TestCase
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $actual = $this->userService->getByUsername('sasha');
         }
         catch (UserServiceException $ex)

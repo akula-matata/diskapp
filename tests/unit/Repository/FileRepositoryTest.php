@@ -5,7 +5,7 @@ namespace DiskApp\Repository;
 use Silex\Application;
 use PHPUnit\Framework\TestCase;
 
-use DiskApp\Controller\FileController;
+use DiskApp\Controller\BaseController;
 use DiskApp\Model\User;
 use DiskApp\Model\File;
 
@@ -67,8 +67,8 @@ class FileRepositoryTest extends TestCase
 
     public function testAdd()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
-        $user = new User($userId, 'petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+        $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $file = new File(null, 'file.txt', $user);
         $actual = $this->files->add($file);
 
@@ -79,10 +79,10 @@ class FileRepositoryTest extends TestCase
     {
         try
         {
-            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $fileId = $this->insertTestFile('file.txt', $userId);
 
-            $user = new User($userId, 'petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $file = new File(null, 'file.txt', $user);
 
             $actual = $this->files->add($file); 
@@ -97,8 +97,8 @@ class FileRepositoryTest extends TestCase
     {
         try
         {
-            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
-            $user = new User(999, 'sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $user = new User(999, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
             $file = new File(null, 'file.txt', $user);
 
             $actual = $this->files->add($file);
@@ -111,12 +111,12 @@ class FileRepositoryTest extends TestCase
 
     public function testGetByFilename()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $fileId = $this->insertTestFile('file.txt', $userId);
         $actual = $this->files->getByFilename('file.txt');
         
         $expected = new File($fileId, 'file.txt', 
-            new User($userId, 'petya', hash('sha256', 'petya' . FileController::SALT, false))
+            new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false))
         );
 
         $this->assertEquals($expected, $actual);
@@ -126,7 +126,7 @@ class FileRepositoryTest extends TestCase
     {
         try
         {
-            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $fileId = $this->insertTestFile('file.txt', $userId);
             $actual = $this->files->getByFilename('another_file.txt');
         }
@@ -138,10 +138,10 @@ class FileRepositoryTest extends TestCase
 
     public function testRemove()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $fileId = $this->insertTestFile('file.txt', $userId);
 
-        $user = new User($userId, 'petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $file = new File($fileId, 'file.txt', $user);
 
         $actual = $this->files->remove($user, $file);
@@ -153,10 +153,10 @@ class FileRepositoryTest extends TestCase
     {
         try
         {
-            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $fileId = $this->insertTestFile('file.txt', $userId);
 
-            $user = new User($userId, 'petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $user = new User($userId, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $file = new File($fileId, 'another_file.txt', $user);
 
             $actual = $this->files->remove($user, $file);
@@ -171,12 +171,12 @@ class FileRepositoryTest extends TestCase
     {
         try
         {
-            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+            $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $fileId = $this->insertTestFile('file.txt', $userId);
 
-            $anotherUserId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+            $anotherUserId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
 
-            $user = new User($anotherUserId, 'sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+            $user = new User($anotherUserId, 'sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
             $file = new File($fileId, 'file.txt', $user);
 
             $actual = $this->files->remove($user, $file);
@@ -189,10 +189,10 @@ class FileRepositoryTest extends TestCase
 
     public function testGetFilesList()
     {
-        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . FileController::SALT, false));
+        $userId = $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $this->insertTestFile('file.txt', $userId);
 
-        $userId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . FileController::SALT, false));
+        $userId = $this->insertTestUser('sasha', hash('sha256', 'sasha' . BaseController::SALT, false));
         $this->insertTestFile('another_file.txt', $userId);
 
         $actual = $this->files->getFilesList();

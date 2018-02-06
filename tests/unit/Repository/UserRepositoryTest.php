@@ -5,7 +5,7 @@ namespace DiskApp\Repository;
 use Silex\Application;
 use PHPUnit\Framework\TestCase;
 
-use DiskApp\Controller\UserController;
+use DiskApp\Controller\BaseController;
 use DiskApp\Model\User;
 
 class UserRepositoryTest extends TestCase
@@ -48,7 +48,7 @@ class UserRepositoryTest extends TestCase
  
     public function testAdd()
     {
-        $user = new User(null, 'petya', hash('sha256', 'petya' . UserController::SALT, false));
+        $user = new User(null, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $actual = $this->users->add($user);
 
         $this->assertEquals(null, $actual);
@@ -58,8 +58,8 @@ class UserRepositoryTest extends TestCase
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
-            $user = new User(null, 'petya', hash('sha256', 'petya' . UserController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
+            $user = new User(null, 'petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $actual = $this->users->add($user);
         }
         catch (UserRepositoryException $ex)
@@ -70,7 +70,7 @@ class UserRepositoryTest extends TestCase
 
     public function testGetByUsername()
     {
-        $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+        $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
         $actual = $this->users->getByUsername('petya');
 
         $this->assertEquals('petya', $actual->getUsername());
@@ -80,7 +80,7 @@ class UserRepositoryTest extends TestCase
     {
         try
         {
-            $this->insertTestUser('petya', hash('sha256', 'petya' . UserController::SALT, false));
+            $this->insertTestUser('petya', hash('sha256', 'petya' . BaseController::SALT, false));
             $actual = $this->users->getByUsername('sasha');
         }
         catch (UserRepositoryException $ex)
